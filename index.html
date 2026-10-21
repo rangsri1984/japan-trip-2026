@@ -161,7 +161,7 @@ details.pl .row a:not(.web){display:inline-block;text-decoration:none;font-size:
 .pwx{font-size:12.5px;color:var(--muted);margin:2px 0 4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .pwx b{color:var(--ink);font-variant-numeric:tabular-nums}
 .wxsrc{font-size:12px;color:var(--muted);line-height:1.6}
-.wxsrc a{color:var(--btn)}
+.wxsrc a,.wx .wh a{color:var(--btn)}
 @media print{.wx{background:#fff;break-inside:avoid}.wx .hrs div{background:#F3F5F8}}
 </style>
 </head><body>
@@ -226,7 +226,7 @@ function paintWx(cfg,data,secs,stale){
     keys.forEach(function(k,n){var L=cfg.loc[k],x=data&&wxDay(data.d[k],date);if(!x)return;var c=wxc(x.c);
       rows+='<div class="wr"><span class="wi">'+c[0]+'</span><span><span class="wn">'+L[3]+' <small>'+L[2].toLocaleString()+' m</small></span><br><span class="wd">'+bi(c[1],c[2])+' · '+bi('ฝน ','Rain ')+r0(x.p)+'% · '+bi('ลม ','Wind ')+r0(x.w)+' km/h</span></span><span class="wt"><span class="lo">'+r0(x.lo)+'°</span> / <span class="hi">'+r0(x.hi)+'°</span></span></div>';
       if(n===0)hrs=wxHrs(data.d[k],date)});
-    var head='<div class="wh"><span>🌤️ '+bi('พยากรณ์อากาศ','Weather forecast')+'</span><span>'+(data?bi('อัปเดต ','Updated ')+fmtT(data.t)+(stale?' · '+bi('ข้อมูลที่บันทึกไว้','saved copy'):''):'')+'</span></div>';
+    var head='<div class="wh"><span>🌤️ '+bi('พยากรณ์อากาศ','Weather forecast')+' (<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>)</span><span>'+(data?bi('อัปเดต ','Updated ')+fmtT(data.t)+(stale?' · '+bi('ข้อมูลที่บันทึกไว้','saved copy'):''):'')+'</span></div>';
     if(rows){box.className='wx';box.innerHTML=head+rows+hrs}
     else{box.className='wx load';box.innerHTML=head+'<span class="wnote">'+(data?bi('ยังไม่มีพยากรณ์สำหรับวันนี้ (พยากรณ์ได้ล่วงหน้า ~16 วัน)','No forecast yet for this date (~16-day range)'):bi('โหลดพยากรณ์ไม่ได้ ต้องต่ออินเทอร์เน็ต','Could not load forecast — needs internet'))+'</span>'}
     sec.querySelectorAll('details.pl').forEach(function(dt){
@@ -239,7 +239,7 @@ function paintWx(cfg,data,secs,stale){
 }
 function initWx(secs){
   var el=document.getElementById('wxcfg');if(!el)return;var cfg;try{cfg=JSON.parse(el.textContent)}catch(e){return}
-  secs.forEach(function(sec){var s=sec.querySelector('.sched');if(!s||sec.querySelector('.wx'))return;var b=document.createElement('div');b.className='wx load';b.innerHTML=bi('กำลังโหลดพยากรณ์อากาศ…','Loading forecast…');s.insertAdjacentElement('afterend',b)});
+  secs.forEach(function(sec){var s=sec.querySelector('.sched');if(!s||sec.querySelector('.wx'))return;var b=document.createElement('div');b.className='wx load';b.innerHTML=bi('กำลังโหลดพยากรณ์อากาศ','Loading forecast')+' (Open-Meteo.com)…';s.insertAdjacentElement('afterend',b)});
   var note=document.querySelector('.note');
   if(note&&!document.querySelector('.wxsrc'))note.insertAdjacentHTML('afterend','<div class="wxsrc">🌤️ '+bi('แหล่งข้อมูลพยากรณ์อากาศ: ','Weather source: ')+'<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> '+bi('(ข้อมูลฟรี สัญญาอนุญาต CC BY 4.0) ซึ่งรวมโมเดลพยากรณ์ของหน่วยงานอุตุนิยมวิทยาหลายแห่ง เช่น JMA กรมอุตุนิยมวิทยาญี่ปุ่น และ ECMWF ศูนย์พยากรณ์อากาศยุโรป · คำนวณตามพิกัดและความสูงของแต่ละจุด · ดึงข้อมูลใหม่ทุกครั้งที่เปิดหน้า','(free data, CC BY 4.0), which blends forecast models from national weather services such as JMA (Japan Meteorological Agency) and ECMWF · adjusted to each spot\'s coordinates and elevation · refreshed every time the page opens')+'</div>');
   var cached=null;try{cached=JSON.parse(localStorage.getItem(WXKEY)||'null')}catch(e){}
