@@ -165,6 +165,17 @@ details.pl .row a:not(.web){display:inline-block;text-decoration:none;font-size:
 .fl .bk{margin-top:6px;align-self:flex-start;font-size:13px;font-weight:600;color:var(--btnink);background:var(--btn);text-decoration:none;padding:7px 12px;border-radius:999px}
 @media print{.fl .bk{background:#fff!important;color:#1F6FB2!important;border:1px solid #1F6FB2}}
 @media print{.wx{background:#fff;break-inside:avoid}.wx .hrs div{background:#F3F5F8}}
+
+.sched li.ai{grid-template-columns:72px 30px minmax(0,1fr);align-items:start}
+.aic{width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;margin-top:-1px;background:color-mix(in srgb,var(--ic) 16%,transparent);color:var(--ic)}
+.aic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.aic.fly{--ic:#2F7BD0}.aic.car{--ic:#1E9C8A}.aic.walk{--ic:#3E9A4B}.aic.food{--ic:#C77A2A}.aic.stay{--ic:#8B5CC6}.aic.bus{--ic:#E07A1F}.aic.leaf{--ic:#D2483A}.aic.view{--ic:#3B6FB6}.aic.shop{--ic:#D0508A}.aic.train{--ic:#4F5BD5}
+:root[data-theme="dark"] .aic{background:color-mix(in srgb,var(--ic) 26%,transparent);filter:brightness(1.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .aic{background:color-mix(in srgb,var(--ic) 26%,transparent);filter:brightness(1.25)}}
+.alg{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--muted)}
+.alg span{display:inline-flex;align-items:center;gap:4px}
+.alg .aic{width:20px;height:20px;border-radius:6px}.alg .aic svg{width:13px;height:13px}
+@media print{.aic{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head><body>
 <div class="gate" id="gate"><form class="gbox" id="gf" autocomplete="off">
@@ -250,6 +261,32 @@ function initWx(secs){
   if(cached)paintWx(cfg,cached,secs,true);
   loadWx(cfg).then(function(d){paintWx(cfg,d,secs,false)}).catch(function(){if(!cached)paintWx(cfg,null,secs,true)});
 }
+
+// ===== Action icons =====
+var ACT_ICONS={
+ land:['fly','<path d="M3 21h18"/><path d="M5.5 9.5l2-1 3.2 2.6 3.3-1.6-4-5.5 2.2-1 6 5.3 3.1-1.4a1.6 1.6 0 0 1 1.3 2.9L8.6 15.7 4 13.5l1.5-.8 1.8.7 2-1z"/>','ลงจอด','Landing'],
+ takeoff:['fly','<path d="M3 21h18"/><path d="M4.5 15.5l2.1.6 2.4-2.1 3.6.6-1.3-6.2 2.4-.3 4 7 3.3.4a1.6 1.6 0 0 1-.4 3.2L6.4 18.2 2.6 14.8l1.7-.2z"/>','บินออก','Take-off'],
+ key:['car','<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M17 6l2.5 2.5"/><path d="M14.5 8.5l2 2"/>','รับรถ','Pick up car'],
+ car:['car','<path d="M3 16.5v-3.2l1.9-4.6A2 2 0 0 1 6.8 7.5h10.4a2 2 0 0 1 1.9 1.2l1.9 4.6v3.2z"/><path d="M3.5 13h17"/><circle cx="7.5" cy="16.8" r="1.7"/><circle cx="16.5" cy="16.8" r="1.7"/>','ขับรถ','Drive'],
+ fuel:['car','<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16"/><path d="M3 21h12"/><path d="M6.5 7h5v4h-5z"/><path d="M14 10h1.5a2 2 0 0 1 2 2v4.5a1.5 1.5 0 0 0 3 0V8.5L18 6"/>','เติมน้ำมัน / คืนรถ','Refuel / return'],
+ gondola:['walk','<path d="M2 6l20-3.5"/><path d="M12 4.3V8"/><path d="M7 8h10a2 2 0 0 1 2 2v6.5a3.5 3.5 0 0 1-3.5 3.5h-7A3.5 3.5 0 0 1 5 16.5V10a2 2 0 0 1 2-2z"/><path d="M5 13h14"/><path d="M12 8v5"/>','กระเช้า + เดินป่า','Gondola + hike'],
+ hike:['walk','<path d="M12 3v18"/><path d="M12 5h6.5l2.5 2.5-2.5 2.5H12"/><path d="M12 12H5.5L3 14.5 5.5 17H12"/><path d="M8.5 21h7"/>','เดินตามเส้นทาง','Trail walk'],
+ cafe:['food','<path d="M4 9h12v4.5A5.5 5.5 0 0 1 10.5 19h-1A5.5 5.5 0 0 1 4 13.5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3.5c-.8 1 .8 2 0 3"/><path d="M12 3.5c-.8 1 .8 2 0 3"/><path d="M3 21.5h14"/>','คาเฟ่ / แวะเที่ยว','Café / stops'],
+ home:['stay','<path d="M3 11.5L12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5h4v5"/>','กลับที่พัก','Back to stay'],
+ bed:['stay','<path d="M3 19V6"/><path d="M3 15h18v4"/><path d="M21 15v-2.5a3 3 0 0 0-3-3h-7V15"/><circle cx="7" cy="12" r="1.8"/>','เช็กอิน','Check-in'],
+ tent:['walk','<path d="M3 20L12 4l9 16"/><path d="M12 12.5L8.5 20"/><path d="M12 12.5l3.5 7.5"/><path d="M1.5 20h21"/>','กางเต็นท์','Camping'],
+ bus:['bus','<path d="M6 3h12a2.5 2.5 0 0 1 2.5 2.5V17h-17V5.5A2.5 2.5 0 0 1 6 3z"/><path d="M3.5 11h17"/><path d="M12 3v8"/><circle cx="7.5" cy="14" r="1"/><circle cx="16.5" cy="14" r="1"/><path d="M6.5 17v2.5"/><path d="M17.5 17v2.5"/>','รถบัส','Bus'],
+ leaf:['leaf','<path d="M5 19C5 10 11 4 20 4c0 9-6 15-15 15z"/><path d="M5 19l9-9"/><path d="M9.5 14.5h4"/><path d="M12 12V8.5"/>','ใบไม้เปลี่ยนสี','Autumn leaves'],
+ fuji:['view','<path d="M2 20l6.5-10.5h7L22 20z"/><path d="M8.5 9.5l1.7 2.6 1.8-1.6 1.8 1.6 1.7-2.6"/><circle cx="19" cy="5" r="2"/>','วิวฟูจิ','Fuji view'],
+ shop:['shop','<path d="M5 8h14l-1.2 13H6.2z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/>','ช้อปปิ้ง','Shopping'],
+ train:['train','<path d="M7 3h10a3 3 0 0 1 3 3v8.5a3.5 3.5 0 0 1-3.5 3.5h-9A3.5 3.5 0 0 1 4 14.5V6a3 3 0 0 1 3-3z"/><path d="M4 10.5h16"/><circle cx="8.5" cy="14.5" r="1"/><circle cx="15.5" cy="14.5" r="1"/><path d="M8 18l-2 3"/><path d="M16 18l2 3"/>','รถไฟ','Train']
+};
+var ACT_PLAN=[['land','key','car'],['gondola','cafe','home'],['car','bus','hike','tent'],['bus','leaf','fuji','bed'],['shop','car','train'],['car','fuel','takeoff','takeoff']];
+function aicHtml(k){var a=ACT_ICONS[k];return '<span class="aic '+a[0]+'" role="img" aria-label="'+a[3]+'" title="'+a[3]+'"><svg viewBox="0 0 24 24">'+a[1]+'</svg></span>'}
+function initIcons(secs){
+  secs.forEach(function(sec,i){var plan=ACT_PLAN[i]||[];sec.querySelectorAll('.sched > li').forEach(function(li,j){var k=plan[j];if(!k||!ACT_ICONS[k]||li.classList.contains('ai'))return;
+    var b=li.querySelector('b');if(!b)return;li.classList.add('ai');b.insertAdjacentHTML('afterend',aicHtml(k))})});
+}
 function initApp(){
   var L=document.getElementById('lang');
   function setLang(){document.documentElement.lang=L.checked?'en':'th';try{localStorage.setItem('lang',L.checked?'en':'th')}catch(e){}}
@@ -305,6 +342,7 @@ function initApp(){
     var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var c=chips[secs.indexOf(e.target)];chips.forEach(function(x){x.style.outline=''});c.style.outline='2px solid var(--btn)';c.scrollIntoView({block:'nearest',inline:'center'})}})},{rootMargin:'-40% 0px -55% 0px'});
     secs.forEach(function(s){io.observe(s)});
   }
+  initIcons(secs);
   initWx(secs);
 }
 async function tryPw(pw,quiet){
