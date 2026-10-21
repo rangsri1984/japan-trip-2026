@@ -178,6 +178,14 @@ details.pl .row a:not(.web){display:inline-block;text-decoration:none;font-size:
 .alg .aic{width:20px;height:20px;border-radius:6px}.alg .aic svg{width:13px;height:13px}
 @media print{.aic{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 details.pl .row a.lk{font-size:12px!important;font-weight:600!important;color:var(--btn)!important;background:transparent!important;background-image:none!important;border:1px solid color-mix(in srgb,var(--btn) 45%,transparent)!important;border-radius:999px!important;padding:4px 10px!important;min-height:0!important;line-height:1.3!important;text-decoration:none!important;box-shadow:none!important}details.pl .row a.lk:hover{border-color:var(--btn)!important}
+
+.memo{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.memo .mh{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;color:var(--muted)}
+.memo .ms{font-weight:500}
+.memo textarea{font:inherit;font-size:14px;line-height:1.5;min-height:64px;resize:vertical;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink);width:100%;box-sizing:border-box}
+.memo textarea:focus{outline:2px solid var(--btn);outline-offset:1px}
+.memo .mp{display:none;white-space:pre-wrap;font-size:13px}
+@media print{.memo textarea{display:none}.memo .mp{display:block}.memo.empty{display:none}}
 </style>
 </head><body>
 <div class="gate" id="gate"><form class="gbox" id="gf" autocomplete="off">
@@ -289,6 +297,25 @@ function initIcons(secs){
   secs.forEach(function(sec,i){var plan=ACT_PLAN[i]||[];sec.querySelectorAll('.sched > li').forEach(function(li,j){var k=plan[j];if(!k||!ACT_ICONS[k]||li.classList.contains('ai'))return;
     var b=li.querySelector('b');if(!b)return;li.classList.add('ai');b.insertAdjacentHTML('afterend',aicHtml(k))})});
 }
+
+// ===== Daily memo (saved on this device) =====
+function initMemo(secs){
+  secs.forEach(function(sec,i){
+    if(sec.querySelector('.memo'))return;var key='jp_memo_d'+(i+1),val='';try{val=localStorage.getItem(key)||''}catch(e){}
+    var w=document.createElement('div');w.className='memo'+(val?'':' empty');
+    w.innerHTML='<div class="mh"><span>📝 '+bi('บันทึกของวันนี้','Notes for this day')+'</span><span class="ms"></span></div><textarea rows="3"></textarea><div class="mp"></div>';
+    var ta=w.querySelector('textarea'),st=w.querySelector('.ms'),mp=w.querySelector('.mp'),t;
+    ta.value=val;mp.textContent=val;ta.setAttribute('aria-label','Memo day '+(i+1));
+    ta.placeholder=(document.documentElement.lang==='en')?'Write a note… (saved on this phone only)':'พิมพ์บันทึก… (บันทึกไว้ในเครื่องนี้เท่านั้น)';
+    ta.addEventListener('input',function(){clearTimeout(t);st.innerHTML=bi('กำลังบันทึก…','Saving…');t=setTimeout(function(){
+      try{if(ta.value.trim())localStorage.setItem(key,ta.value);else localStorage.removeItem(key);
+        var tm=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});st.innerHTML='✓ '+bi('บันทึกแล้ว ','Saved ')+tm}
+      catch(e){st.innerHTML=bi('บันทึกไม่ได้ในเบราว์เซอร์นี้','Cannot save in this browser')}
+      mp.textContent=ta.value;w.classList.toggle('empty',!ta.value.trim())},500)});
+    var anchor=sec.querySelector('.pltitle')||sec.lastElementChild;sec.insertBefore(w,anchor);
+  });
+  var L=document.getElementById('lang');if(L)L.addEventListener('change',function(){document.querySelectorAll('.memo textarea').forEach(function(ta){ta.placeholder=L.checked?'Write a note… (saved on this phone only)':'พิมพ์บันทึก… (บันทึกไว้ในเครื่องนี้เท่านั้น)'})});
+}
 function initApp(){
   var L=document.getElementById('lang');
   function setLang(){document.documentElement.lang=L.checked?'en':'th';try{localStorage.setItem('lang',L.checked?'en':'th')}catch(e){}}
@@ -345,6 +372,7 @@ function initApp(){
     secs.forEach(function(s){io.observe(s)});
   }
   initIcons(secs);
+  initMemo(secs);
   initWx(secs);
 }
 async function tryPw(pw,quiet){
