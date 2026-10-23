@@ -308,11 +308,11 @@ function collapsePast(secs){
 
 // ===== Collapse finished flights =====
 function collapseFlights(today){
-  var fls=[].slice.call(document.querySelectorAll('.flights .fl')),done=['2026-10-23','2026-10-29'];
+  var fls=[].slice.call(document.querySelectorAll('.flights .fl')),done=['2026-10-23','2026-10-29'],from=['2026-10-23','0000-00-00'];
   fls.forEach(function(fl,i){
-    if(!done[i]||today<done[i]||fl.dataset.cp)return;fl.dataset.cp='1';fl.classList.add('flc');
+    if(!from[i]||today<from[i]||fl.dataset.cp)return;fl.dataset.cp='1';fl.classList.add('flc');
     var h=fl.querySelector('.h'),b=document.createElement('button');b.type='button';b.className='cpbtn';
-    h.insertAdjacentHTML('beforeend',' <span class="badge done">'+bi('บินแล้ว','DONE')+'</span>');
+    if(today>=done[i])h.insertAdjacentHTML('beforeend',' <span class="badge done">'+bi('บินแล้ว','DONE')+'</span>');
     function lbl(){b.innerHTML=fl.classList.contains('flc')?bi('ดู ▾','Show ▾'):bi('ซ่อน ▴','Hide ▴')}
     lbl();b.onclick=function(){fl.classList.toggle('flc');lbl()};
     var wrap=document.createElement('div');wrap.className='flh';h.parentNode.insertBefore(wrap,h);wrap.appendChild(h);wrap.appendChild(b);
