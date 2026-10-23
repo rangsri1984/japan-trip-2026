@@ -181,6 +181,7 @@ details.pl .row a.lk{font-size:12px!important;font-weight:600!important;color:va
 :root{--ok:#2E7D4F;--okbg:#E7F5EC;--okline:#A9D9B9}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ok:#7FD39A;--okbg:#16301F;--okline:#2C5A3B}}:root[data-theme="dark"]{--ok:#7FD39A;--okbg:#16301F;--okline:#2C5A3B}.actual-card{background:var(--okbg);border:1px solid var(--okline);border-left:5px solid var(--ok);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;margin:4px 0 6px}.actual-card .ah{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;color:var(--ok)}.actual-card .ad{margin-left:auto;font-size:12px;font-weight:600;color:var(--ok);opacity:.85}.actual-card .sched{font-size:13px}.actual-card .sched b{color:var(--ok)}.actual-card .row a{font-size:12.5px;font-weight:600;color:#fff!important;background:var(--ok)!important;border:0!important;border-radius:999px;padding:6px 12px;text-decoration:none}@media print{.actual-card{background:#fff;break-inside:avoid}}
 :root{--sp:#B8620E;--spbg:#FFF3E3;--spline:#F2C995}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sp:#F2B66B;--spbg:#33240F;--spline:#5C4220}}:root[data-theme="dark"]{--sp:#F2B66B;--spbg:#33240F;--spline:#5C4220}.spend-card{background:var(--spbg);border:1px solid var(--spline);border-left:5px solid var(--sp);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;margin:0 0 6px}.spend-card .sh{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;color:var(--sp)}.spend-card .sd{margin-left:auto;font-size:12px;font-weight:600}.spend-card .sr{display:flex;justify-content:space-between;align-items:baseline;font-size:14px}.spend-card .sr b{font-family:var(--display);font-size:20px;color:var(--sp);font-variant-numeric:tabular-nums}.spend-card .sn{font-size:12px;color:var(--muted)}@media print{.spend-card{background:#fff;break-inside:avoid}}
 .day.collapsed>*:not(.dh):not(.dt){display:none!important}.day.collapsed{opacity:.75;padding-block:12px}.day.collapsed .dt{cursor:pointer;font-size:18px}.cpbtn{margin-left:auto;font:inherit;font-size:12px;font-weight:600;color:var(--btn);background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer}@media print{.cpbtn{display:none}}
+.fl .flh{display:flex;align-items:center;gap:8px}.fl .flh .cpbtn{margin-left:auto}.fl.flc>*:not(.flh){display:none!important}.fl.flc{opacity:.75;padding-block:10px}
 </style>
 </head><body>
 <div class="gate" id="gate"><form class="gbox" id="gf" autocomplete="off">
@@ -304,6 +305,20 @@ function collapsePast(secs){
   });
   window.addEventListener('beforeprint',function(){secs.forEach(function(s){s.classList.remove('collapsed')})});
 }
+
+// ===== Collapse finished flights =====
+function collapseFlights(today){
+  var fls=[].slice.call(document.querySelectorAll('.flights .fl')),done=['2026-10-23','2026-10-29'];
+  fls.forEach(function(fl,i){
+    if(!done[i]||today<done[i]||fl.dataset.cp)return;fl.dataset.cp='1';fl.classList.add('flc');
+    var h=fl.querySelector('.h'),b=document.createElement('button');b.type='button';b.className='cpbtn';
+    h.insertAdjacentHTML('beforeend',' <span class="badge done">'+bi('บินแล้ว','DONE')+'</span>');
+    function lbl(){b.innerHTML=fl.classList.contains('flc')?bi('ดู ▾','Show ▾'):bi('ซ่อน ▴','Hide ▴')}
+    lbl();b.onclick=function(){fl.classList.toggle('flc');lbl()};
+    var wrap=document.createElement('div');wrap.className='flh';h.parentNode.insertBefore(wrap,h);wrap.appendChild(h);wrap.appendChild(b);
+  });
+  window.addEventListener('beforeprint',function(){fls.forEach(function(f){f.classList.remove('flc')})});
+}
 function initApp(){
   var L=document.getElementById('lang');
   function setLang(){document.documentElement.lang=L.checked?'en':'th';try{localStorage.setItem('lang',L.checked?'en':'th')}catch(e){}}
@@ -360,6 +375,7 @@ function initApp(){
     secs.forEach(function(s){io.observe(s)});
   }
   collapsePast(secs);
+  collapseFlights(today);
   initIcons(secs);
   initWx(secs);
 }
