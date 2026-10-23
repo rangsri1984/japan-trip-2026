@@ -180,6 +180,7 @@ details.pl .row a:not(.web){display:inline-block;text-decoration:none;font-size:
 details.pl .row a.lk{font-size:12px!important;font-weight:600!important;color:var(--btn)!important;background:transparent!important;background-image:none!important;border:1px solid color-mix(in srgb,var(--btn) 45%,transparent)!important;border-radius:999px!important;padding:4px 10px!important;min-height:0!important;line-height:1.3!important;text-decoration:none!important;box-shadow:none!important}details.pl .row a.lk:hover{border-color:var(--btn)!important}
 :root{--ok:#2E7D4F;--okbg:#E7F5EC;--okline:#A9D9B9}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ok:#7FD39A;--okbg:#16301F;--okline:#2C5A3B}}:root[data-theme="dark"]{--ok:#7FD39A;--okbg:#16301F;--okline:#2C5A3B}.actual-card{background:var(--okbg);border:1px solid var(--okline);border-left:5px solid var(--ok);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;margin:4px 0 6px}.actual-card .ah{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;color:var(--ok)}.actual-card .ad{margin-left:auto;font-size:12px;font-weight:600;color:var(--ok);opacity:.85}.actual-card .sched{font-size:13px}.actual-card .sched b{color:var(--ok)}.actual-card .row a{font-size:12.5px;font-weight:600;color:#fff!important;background:var(--ok)!important;border:0!important;border-radius:999px;padding:6px 12px;text-decoration:none}@media print{.actual-card{background:#fff;break-inside:avoid}}
 :root{--sp:#B8620E;--spbg:#FFF3E3;--spline:#F2C995}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sp:#F2B66B;--spbg:#33240F;--spline:#5C4220}}:root[data-theme="dark"]{--sp:#F2B66B;--spbg:#33240F;--spline:#5C4220}.spend-card{background:var(--spbg);border:1px solid var(--spline);border-left:5px solid var(--sp);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;margin:0 0 6px}.spend-card .sh{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;color:var(--sp)}.spend-card .sd{margin-left:auto;font-size:12px;font-weight:600}.spend-card .sr{display:flex;justify-content:space-between;align-items:baseline;font-size:14px}.spend-card .sr b{font-family:var(--display);font-size:20px;color:var(--sp);font-variant-numeric:tabular-nums}.spend-card .sn{font-size:12px;color:var(--muted)}@media print{.spend-card{background:#fff;break-inside:avoid}}
+.day.collapsed>*:not(.dh):not(.dt){display:none!important}.day.collapsed{opacity:.75;padding-block:12px}.day.collapsed .dt{cursor:pointer;font-size:18px}.cpbtn{margin-left:auto;font:inherit;font-size:12px;font-weight:600;color:var(--btn);background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer}@media print{.cpbtn{display:none}}
 </style>
 </head><body>
 <div class="gate" id="gate"><form class="gbox" id="gf" autocomplete="off">
@@ -291,6 +292,18 @@ function initIcons(secs){
   secs.forEach(function(sec,i){var plan=ACT_PLAN[i]||[];sec.querySelectorAll('.sched > li').forEach(function(li,j){var k=plan[j];if(!k||!ACT_ICONS[k]||li.classList.contains('ai'))return;
     var b=li.querySelector('b');if(!b)return;li.classList.add('ai');b.insertAdjacentHTML('afterend',aicHtml(k))})});
 }
+
+// ===== Collapse past days =====
+function collapsePast(secs){
+  secs.forEach(function(sec){
+    if(!sec.classList.contains('past')||sec.dataset.cp)return;sec.dataset.cp='1';sec.classList.add('collapsed');
+    var dh=sec.querySelector('.dh'),b=document.createElement('button');b.type='button';b.className='cpbtn';
+    function lbl(){b.innerHTML=sec.classList.contains('collapsed')?bi('ดูย้อนหลัง ▾','Show ▾'):bi('ซ่อน ▴','Hide ▴')}
+    lbl();b.onclick=function(e){e.stopPropagation();sec.classList.toggle('collapsed');lbl()};dh.appendChild(b);
+    sec.querySelector('.dt').addEventListener('click',function(){if(sec.classList.contains('collapsed')){sec.classList.remove('collapsed');lbl()}});
+  });
+  window.addEventListener('beforeprint',function(){secs.forEach(function(s){s.classList.remove('collapsed')})});
+}
 function initApp(){
   var L=document.getElementById('lang');
   function setLang(){document.documentElement.lang=L.checked?'en':'th';try{localStorage.setItem('lang',L.checked?'en':'th')}catch(e){}}
@@ -346,6 +359,7 @@ function initApp(){
     var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var c=chips[secs.indexOf(e.target)];chips.forEach(function(x){x.style.outline=''});c.style.outline='2px solid var(--btn)';c.scrollIntoView({block:'nearest',inline:'center'})}})},{rootMargin:'-40% 0px -55% 0px'});
     secs.forEach(function(s){io.observe(s)});
   }
+  collapsePast(secs);
   initIcons(secs);
   initWx(secs);
 }
